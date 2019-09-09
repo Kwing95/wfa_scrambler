@@ -4,11 +4,13 @@ import http.client
 from lxml import html
 
 def get_synonyms(conn, word):
+    print("Testing word: " + word)
     conn.request("GET", "/browse/" + word)
     r1 = conn.getresponse()
     data1 = r1.read()
     if(len(data1.decode("utf-8")) == 0):
         return []
+    print("Sending request...")
     tree = html.fromstring(data1)
     synonyms = tree.xpath('//a[@class="css-gkae64 etbu2a31"]/text()')
     return synonyms
@@ -24,10 +26,12 @@ if not reading:
 word = dictionary.readline().strip('\n')
 with open("thesaurus.txt", "a+") as out_file:
     while(word != ""):
-            if(reading):
-                out_file.write('"' + word + '" : ' + str(get_synonyms(conn, word)) + ", ")
-                # thesaurus[word] = get_synonyms(conn, word)
-            reading = reading or bookmark == word
-            word = dictionary.readline().strip('\n')
+        if(reading):
+            synonyms = get_synonyms(conn, word)
+            if(synonyms):
+                out_file.write('"' + word + '" : ' + str(synonyms) + ", ")
+            # thesaurus[word] = get_synonyms(conn, word)
+        reading = reading or bookmark == word
+        word = dictionary.readline().strip('\n')
 
 print(thesaurus)
